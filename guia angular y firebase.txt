@@ -1,0 +1,225 @@
+nombre de imagen subida = nombredeimagen_aleatorio
+
+Domini code
+https://www.youtube.com/watch?v=AG-MOY40jYI&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=2
+
+Creamos en la consola de firebase nuestro proyecto
+
+seleccionamos los métodos de autentificación
+
+creamos la BBDD primero en pruebas
+
+https://www.youtube.com/watch?v=AERA1qjSy2w&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=3
+
+ng new "nombre"
+
+cd "nombre" y ng serve --open
+	-proyecto desplegado en localhost:4200
+
+Creamos los componentes dentro de su carpeta components ng g c "components/'nombre'"
+	- home, navbar, users/profile, users/login...
+
+Genereamos los servicios dentro de la carpeta services ng g s "services/'nombre'"
+	- auth, dataApi
+
+Generamos los guards dentro de la carpeta guards ng g g "guards/'nombre'"
+	
+https://www.youtube.com/watch?v=3gMulzpXcyY
+
+Instalamos las dependencias con npm i "nombres" -S
+
+En el caso de instalar bootstrap, jquery o parecidos hay que enlazarlos desde el angular.json
+	En styles -> 	"/node_modules/boostrap/dist/css/bootstrap.css"
+	En scripts->	"./node_modules/jquery/dist/jquery.min.js",
+              		"./node_modules/popper.js/dist/umd/popper.js",
+              		"./node_modules/bootstrap/dist/js/bootstrap.js"
+
+https://www.youtube.com/watch?v=jYcAO49PaCI
+
+Creamos las rutas en el app-routing.module.ts
+	Creamos un objeto dentro del array en la constante rutas. indicamos en el path con que ruta trabajamos y en el siguiente parámetro el componente
+		ej: {path: '', component: HomeComponent}
+	Hay que importar cada componente de su carpeta
+		import { HomeComponent } from './components/home/home.component';
+
+Importamos el módulo de formularios en el app.module.ts
+	import { FormsModule } from '@angular/forms';
+	Lo ponemos también dentro del array de imports:[]
+
+Borramos el app.component.html y dejamos sólo <router-outlet></router-outlet>
+	Ahora podemos navegar por las rutas para comprovar si funcionan
+
+https://www.youtube.com/watch?v=n-_nhkaAyvc
+
+Llamamos el <app-navbar></app-navbar> en el app.component.ts encima de router-outlet
+
+Para pasar variables del servidor al cliente las ponemos en el constructor
+	p.ej:   public app_name: string = 'BookStore'  --> Para el título del navbar
+	en nuestra app creamos un boolean de isLogged ya que tenemos enlaces con el *ngIf="isLogged" y nos da error
+		public isLogged: boolean = false;
+
+Vamos a crear los registros, en servicios, auth creamos lo métodos	
+	registerUser(){}, loginEmailUser(){}, loginFacebookUser(){}, loginGoogleUser(){}, logoutUser(){}
+
+Enlazamos la app con firebase entrando en environment y pegando despues del production:false firebaseConfig y entre {} lo que encontramos en cofiguración del proyecto
+	{
+	    apiKey: "AIzaSyBIXIMJ4ic6HflvbH257EJZWAQfKC-Hy7g",
+	    authDomain: "bookstore-domini.firebaseapp.com",
+	    databaseURL: "https://bookstore-domini.firebaseio.com",
+	    projectId: "bookstore-domini",
+	    storageBucket: "bookstore-domini.appspot.com",
+	    messagingSenderId: "756380875743",
+	    appId: "1:756380875743:web:d7a5ba8799b133294c226a"
+	  }
+lo importamos en app.module.ts  --> import { environment } from '../environments/environment'
+
+Necesitamos instalar npm i firebase y @angular/fire --save
+Los importamos en el app.module
+	import { AngularFireModule } from '@angular/fire';
+	import { AngularFireDatabaseModule } from '@angular/fire/database';
+	en imports los ponemos con en el environment
+		    AngularFireModule.initializeApp(environment.firebaseConfig),
+    			AngularFireDatabaseModule
+
+ya podemos trabajar en el componente del login (https://github.com/angular/angularfire/blob/master/docs/auth/getting-started.md)
+tenemos que importar en el login.component.ts el AngularFireAuth y el auth
+	import { AngularFireAuth } from '@angular/fire/auth';
+	import { auth } from 'firebase/app';
+	y dentro del constructor pasamos en public el auth: AngularFirebaseAuth
+	y creamos los métodos login y logout (en domini onLoginGoogle() y onLogout() )
+		  login() {
+		    this.auth.signInWithPopup(new auth.GoogleAuthProvider());
+		  }
+		  logout() {
+		    this.auth.signOut();
+		  }
+		Yohe añadido async await a la función
+	el import { AngularFireAuth } from '@angular/fire/auth'; lo tenemos que importar también en el app.Module y ponerlo como provider
+	Finalmente pasamos el metodo en el click del boton (click)="onLoginGoogle()"
+	para redirigir importamos import { Router } from '@angular/router';
+		pasamos private router: Router en el constructor
+		redirigimos en la función de login this.router.navigate(['admin/list-books']);
+
+https://www.youtube.com/watch?v=ue2UtlSGmSE&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=9&t=0s
+
+Login con facebook que yo de momento no haré
+
+en el navbar.component creamos la función getCurrentUser() para saber si isLogged()
+	necesitamos importar el AuthService y el AngularFireAuth
+		import { AuthService } from '../../services/auth.service';
+		import { AngularFireAuth } from '@angular/fire/auth';
+	los pasamos al constructor(private authService: AuthService, private afsAuth: AngularFireAuth)
+	creamos el condicional para isLogged true si todo va bien etc
+		    this.authService.isAuth().subscribe( auth => {
+		      if (auth){
+			console.log('user logged');
+			this.isLogged = true;
+		      } else {
+			console.log('NOT user logged');
+			this.isLogged = false;
+		      }
+		    })
+	nos falta crear la función isAuth en auth.services
+	importamos 	import { AngularFireAuth } from '@angular/fire/auth';
+			import { map } from 'rxjs/operators';
+	la pasamos al  constructor(private afsAuth: AngularFireAuth) { }
+	y creamos el isAuth(){
+    		return this.afsAuth.authState.pipe(map(auth => auth));
+		}
+	Finalmente en el component del navbar usamos getCurrentUser() en el ngOnInit(){}
+	Para comprovar si estamos loggeados podemos poner en el frontend {{isLogged}} para que nos devuelva el true o el false
+Pasamos la función del logout() también al navbar pero habrá que cambiar el auth por el afsAuth que es como lo estamos pasando en este componente
+
+https://www.youtube.com/watch?v=obgPeJJUz0Q
+
+Deberíamos poner los metodos de autentificación en nuestro auth.service así que lo copiamos de login.component y lo pasamos
+(por si debeos llamar a nuestro método de login poder llamar al service y no rehacerlo)
+	Creamos la funcion de login con user y pass así que pasamos estos valores a la función
+		  loginEmailUser(email:string, password: string){
+		    return new Promise((resolve,reject)=>{
+		      this.afsAuth.signInWithEmailAndPassword(email,password)
+		      .then(userData => resolve(userData),
+		      err => reject(err));
+		    })
+		  }
+	En el login component importamos el authService y lo inyectamos en el constructor
+	  onLoginGoogle():void {
+	    this.authService.loginGoogleUser()
+	    .then((res) =>{
+	    this.router.navigate(['admin/list-books']);
+	    }).catch(err => console.log('err, err'))
+	  }
+
+Hacemos lo mimso con el logout, en services logoutUser pasamos this.afsAuth.singout()
+	en login llamamos la funcion this.authService.logoutUser();
+
+Ahora llamamos desde el login component al loginEmailUser del auth service
+	  onLogin():void {
+	    this.authService.loginEmailUser(this.email, this.password)
+	    .then((res)=>{
+	      this.router.navigate(['admin/list-books']);
+	    }).catch(err => console.log('err', err.message));
+	  }
+	para poder usar el email y el password los pasamos a la clase
+	en el html ponemos en el submit (submit)="onLogin()" y en los inputs [(ngModel)]="email"/"password"
+Para probar si funciona el html podemos poner en la función console.log(this.email, this.password) y ver si están entrando los valores
+Creamos un usuario y contraseña desde firebase console, en authentication y comprobamos que todo va bien
+
+*Ya está funcionando, pero como hemos usado dos veces el navigate(['admin/list-books']) vamos a haver la función onLoginRedirect
+	this.router.navigate(['admin/list-books']);
+	en cada función pasamos this.onLoginRedirect() 
+	Se podría hacer lo mismo con el catch del error
+
+https://www.youtube.com/watch?v=y7maX7rK5Vw
+Creamos el registerUser en el auth.service.ts
+	  registerUser(email: string, pass:string){
+	    return new Promise ((resolve,reject)=>{
+	      this.afsAuth.createUserWithEmailAndPassword(email, pass)
+	      .then( userData => resolve(userData)),
+	      err => reject(err);
+	    })
+	  }
+ahora importamos en el  componente del registro el authService y el Router, los inyectamos en el constructor y creamos la función que llamará al servicio
+importamos el email y el pass dentro de la clase para poder pasarlos en registerUser() 'public email:string=""'...
+	  onAddUser(){
+	    this.authService.registerUser(this.email, this.password)
+	    .then ((res) =>{
+	      this.router.navigate(['admin/list-books']);
+	    }).catch(err => console.log('err', err.message));
+	  }
+
+por último los pasamos al html, el form con (ngSubmit)="onAddUser()" y los valores con [(ngModel)]="email"/"password"
+
+https://www.youtube.com/watch?v=MbmQBcj0fTE
+
+Para subir imagenes creamos el html
+	<input type="file" accept=".png .jpg" (change)="onUpload($event)">
+en la función ponemos de momento que en consola imprima para ver lo que nos viene
+	  onUpload(e){
+	    console.log('subir: ', e);
+	  }
+podemos ver en la consola, en files> target> 0 'el primer elemento del array de uno'> name ahi esta el nombre
+por lo tanto e.target.files[0] será el nombre de nuestro archivo
+para trabajar con imágenes tenemos que importar al app.module.ts el AngularFireStorageModule
+Importamos también el AngularFireStorage (sin module aqui) al register.component.ts y lo inyectamos también al constructor
+Creamos un id único para la imagen por si el usuario sube dos imagenes con el mismo nombre, evitaremos que se sobreescriban
+	  onUpload(e){
+	    //console.log('subir: ', e.target.files[0]);
+	    const id = Math.random().toString(36).substring(2);
+	    const file = e.target.files[0];
+	    const filePath = 'upload/imagen.png';
+	    const ref = this.storage.ref(filePath);
+	    const task = this.storage.upload(filePath, file);
+	    }
+En firebase consosle habilitamos el storage, en rules borramos lo de que sólo los registrados puedan subir las imágenes
+Ahora si hacemos el registro seleccionando una imagen ya se sube esta a firebase console en upload/imagen.png
+Tenemos que cambiar, que ahora directamente se sube la imagen con el change y que el nombre del archivo es estático
+cambiamos el nombre estático por el id generado --> const filePath = `uploads/$profile_{id}`;
+importamos import { finalize } from 'rxjs/operators'; e import { Observable } from 'rxjs/internal/Observable';
+creamos la propiedad uploadPercent: Observable<number>; y urlImage: Observable<string>; y las usamos
+    this.uploadPercent = task.percentageChanges();
+    task.snapshotChanges().pipe(finalize(()=> this.urlImage = ref.getDownloadURL())).subscribe();
+
+16:00
+
+
