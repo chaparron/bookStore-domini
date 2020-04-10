@@ -21,6 +21,7 @@ import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { ProfileComponent } from './components/users/profile/profile.component';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { ProfileComponent } from './components/users/profile/profile.component';
     AngularFireDatabaseModule,
     AngularFireStorageModule
   ],
-  providers: [AngularFireAuth],
+  providers: [AngularFireAuth,
+    AngularFirestore],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

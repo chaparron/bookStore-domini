@@ -302,10 +302,97 @@ ngOnInit() {
     })
   }
 
+https://www.youtube.com/watch?v=o74Uwo_N-ng
 
+Vamos a trabajar en la home, creamos los métodos del CRUD en data-api.services
+import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore'; y lo inyectamos
+importamos también el bookInterface
+import { Observable } from 'rxjs/internal/Observable';
+creamos la propiedad booksColllection y books
+	  private booksCollection: AngularFirestoreCollection<BookInterface>;
+	  private books: Observable<BookInterface[]>;
+en el constructor obtenemos obtenemos los libros con el valueChanges y los retornamos en getAllBooks
+	  this.booksCollection = afs.collection<BookInterface>('books');
+	  this.books = this.booksCollection.valueChanges(); 
+  getAllBooks(){
+    return this.books;
+  }
+iniciamos una coleccion desde firebase console (books) con un documento (nombre: El quijote, precio: 10)
+en el homeComponent importamos el DataApiService y lo inyetamos en el constructor private dataApi: DataApiService
+en ngOnInit llamamos al getAllBooks con el subscribe
+	    this.dataApi.getAllBooks().subscribe(books =>{
+	      console.log('BOOKS', books);
+	    });
+para que funcione tenemos que haber creado el public books = [] y el public book = ''
+Necesitamos en el app.module import { AngularFirestore } from '@angular/fire/firestore'; y usarlo como provider
+Ya vemos en la home el console.log los books que tenemos en firebase
+	Para obtener el id importamos map en el api-service y modificamos el getAllBooks()
+	  getAllBooks(){
+	    return this.books = this.booksCollection.snapshotChanges()
+	    .pipe(map(changes => {
+	      return changes.map( action =>{
+		const data = action.payload.doc.data() as BookInterface;
+		data.id = action.payload.doc.id;
+		return data;
+	      })
+	    }));
+	  }
 
+https://www.youtube.com/watch?v=-NDPlaEDoRM&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=15
 
+completamos todos los campos de un libro en firebase para poder verlo en la home
+Ahora en home component, asignamos a un array todo lo obtenido en getBooks y ponemos las variables en el html haciendo un *ngFor ="let book of books"
+	  ngOnInit(): void {
+	    this.dataApi.getAllBooks().subscribe(books =>{
+	      this.books = books;
+	    });
+	  }
 
+https://www.youtube.com/watch?v=chyPkwifNbc&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=16
+Empezamos a trabajar en el detalle de cada libro
+
+En data-api declaramos las propiedades
+	  private bookDoc: AngularFirestoreDocument<BookInterface>;
+	  private book: Observable<BookInterface>;
+y trabajamos en getOneBook(idBook: string){
+	    this.bookDoc = this.afs.doc<BookInterface>(`books/${idBook}`);
+	    return this.book = this.bookDoc.snapshotChanges().pipe(map(action=>{
+	      if(action.payload.exists === false){
+		return null;
+	      }else{
+		const data = action.payload.data() as BookInterface;
+		data.id = action.payload.id;
+		return data;
+	      }
+	    }));
+	  }
+vamos al details component
+importamos DataApiService y ls inyrctamos en el constructor
+importamos BookInterface y la ponemos de tipo en public book:BookInterface
+llamamos al getOneBook() desde el ngInit, de momento pasando la unica id que tenemos creada
+	  ngOnInit(): void {
+	    const idBook = 'f5jjM0uvRU1jMmKrTj8d';
+	    this.dataApi.getOneBook(idBook).subscribe( book =>{
+	      console.log(book);
+	    })
+	  }
+Ahora tenemos que recuperar la id que nos viene por la URL para lo que tenemos que importar
+	import { ActivatedRoute, Params } from '@angular/router';
+	inyectamos el ActivatedRoute en el constructor
+y ya podemos leer el id que viene por la ruta
+    	const idBook = this.route.snapshot.params['id'];
+	Lo separamos de ngOnInit y en vez de console.log lo pasamos a la variable
+	  ngOnInit(): void {
+	    //const idBook = 'f5jjM0uvRU1jMmKrTj8d';
+	    const idBook = this.route.snapshot.params['id'];
+	    this.getDetails(idBook);
+	  }
+	  getDetails(idBook: string): void{
+	    this.dataApi.getOneBook(idBook).subscribe( book =>{
+	      this.book = book;
+	    })
+	  }
+Ya nos podemos poner a trabajar en el html, podemos imprimir {{book | json}} para ver que se están pasando los valores
 
 
 
