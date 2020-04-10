@@ -1,5 +1,6 @@
 nombre de imagen subida = nombredeimagen_aleatorio
 hay que validar que la imagen sea imagen (aquí solo lo hacemos por html)
+hay que editar perfil, foto, nombre, etc
 
 Domini code
 https://www.youtube.com/watch?v=AG-MOY40jYI&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=2
@@ -257,6 +258,51 @@ necesitamos importar ElementRef y ViewChild y lo usaremos dentro de nuestra clas
 	    }).catch(err => console.log('err', err.message));
 	  }
 Para ver si se ha guardado la imagen la recuperaremos en el perfil del usuario
+
+https://www.youtube.com/watch?v=Jf4prK34U_Q
+
+Creamos las interfaces de user y book en la carpeta que crearemos "model"
+	export interface UserInterface{
+	    id?: string;
+	    name?: string;
+	    email?: string;
+	    password?: string;
+	    photoUrl?: string;
+	}
+	export interface BookInterface{
+	    titulo?: string;
+	    idioma?: string;
+	    descripcion?; string;
+	    portada?: string;
+	    precio?: string;
+	    link_amazon?: string;
+	    autor?: string;
+	    oferta?: string;
+	    id?: string;
+	}
+
+https://www.youtube.com/watch?v=bVkrXb-Y42M
+
+Trabajamos en el profile del usuario una vez está logueado
+vamos al component del usuario e importamos el authService y la interface de usuario
+metemos el private authService:AuthService en el constructor y nos traemos el user
+  user: UserInterface = {
+    name: '',
+    email: '',
+    photoUrl: ''
+  };
+ngOnInit() {
+    this.authService.isAuth().subscribe(user => {
+      if (user) {
+        this.user.name = user.displayName;
+        this.user.email = user.email;
+        this.user.photoUrl = user.photoURL;
+        this.providerId = user.providerData[0].providerId;
+      }
+    })
+  }
+
+
 
 
 
