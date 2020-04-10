@@ -23,14 +23,25 @@
                   <input type="password" name="password" class="form-control" placeholder="Password"
                     [(ngModel)]="password" required minlength="5" maxlength="10">
                 </div>
+                <hr>
                 <!-- <div class="alert alert-danger" role="alert" *ngIf="password.touched && !password.valid">
                   <div *ngIf="password.errors.required">Password is required</div>
                   <div *ngIf="password.errors.minlength">Password must be at least 5 characters</div> -->
                 <div class="form-group">
                   <h5>Selecciona imagen:</h5>
-                  <input type="file" accept=".png .jpg" (change)="onUpload($event)">
+                  <input type="file" accept="image/*" (change)="onUpload($event)">
                 </div>
-                <button type="submit" class="btn btn-lg btn-primary btn-block">Register</button>
+                <input #imageUser type="hidden"  [value]="urlImage | async">
+                <div class="progress">
+                  <div class="progress-bar progress-bar-striped bg-success" role="progressbar" [style.width]="(uploadPercent | async) + '%'" >
+                  </div>
+                </div>
+                <br>
+                <button *ngIf="urlImage | async; else btnDissabled" type="submit" class="btn btn-lg btn-primary btn-block">Register</button>
+                <ng-template #btnDissabled>
+                  <button type="submit" disabled= true class="btn btn-lg btn-secondary btn-block">Register</button>
+                </ng-template>
+
                 <div class="form-group">
                   <a routerLink="/user/login" class="form-control login-user">Do you have account?</a>
                 </div>

@@ -1,4 +1,5 @@
 nombre de imagen subida = nombredeimagen_aleatorio
+hay que validar que la imagen sea imagen (aquí solo lo hacemos por html)
 
 Domini code
 https://www.youtube.com/watch?v=AG-MOY40jYI&list=PL_9MDdjVuFjHgSCW7_15yoCAFUE5NAEjm&index=2
@@ -193,7 +194,7 @@ por último los pasamos al html, el form con (ngSubmit)="onAddUser()" y los valo
 https://www.youtube.com/watch?v=MbmQBcj0fTE
 
 Para subir imagenes creamos el html
-	<input type="file" accept=".png .jpg" (change)="onUpload($event)">
+	<input type="file" accept="image/*" (change)="onUpload($event)">
 en la función ponemos de momento que en consola imprima para ver lo que nos viene
 	  onUpload(e){
 	    console.log('subir: ', e);
@@ -217,9 +218,49 @@ Tenemos que cambiar, que ahora directamente se sube la imagen con el change y qu
 cambiamos el nombre estático por el id generado --> const filePath = `uploads/$profile_{id}`;
 importamos import { finalize } from 'rxjs/operators'; e import { Observable } from 'rxjs/internal/Observable';
 creamos la propiedad uploadPercent: Observable<number>; y urlImage: Observable<string>; y las usamos
-    this.uploadPercent = task.percentageChanges();
-    task.snapshotChanges().pipe(finalize(()=> this.urlImage = ref.getDownloadURL())).subscribe();
+	this.uploadPercent = task.percentageChanges();
+	task.snapshotChanges().pipe(finalize(()=> this.urlImage = ref.getDownloadURL())).subscribe();
+	En el html creamos el <input type="text" [value]="urlImage | async"> y sólo cuando este cargado se podrá dar a registrar
+	Entonces creamos una copia del boton de registro pero disabled dentro de un ng-template
+	Hacemos desde el botón original con un *ngIf que se carge el disabled hasta que esté cargado el input con el value de la imagen
+        Ocultamos el imput de la con el valor de la imagen y le creamos un id
+	Creamos una progressbar ligada al valor que habiamos creado en el component.ts
+		<div class="form-group">
+                  <h5>Selecciona imagen:</h5>
+                  <input type="file" accept="image/*" (change)="onUpload($event)">
+                </div>
+                <input #imageUser type="hidden"  [value]="urlImage | async">
+                <div class="progress">
+                  <div class="progress-bar progress-bar-striped bg-success" role="progressbar" [style.width]="(uploadPercent | async) + '%'" >
+                  </div>
+                </div>
+                <br>
+                <button *ngIf="urlImage | async; else btnDissabled" type="submit" class="btn btn-lg btn-primary btn-block">Register</button>
+                <ng-template #btnDissabled>
+                  <button type="submit" disabled= true class="btn btn-lg btn-secondary btn-block">Register</button>
+                </ng-template>
+para que el enlace de la imagen se quede guardado en el usuario modificamos el onAddUser() del register component
+necesitamos importar ElementRef y ViewChild y lo usaremos dentro de nuestra clase
+	  onAddUser(){
+	    this.authService.registerUser(this.email, this.password)
+	    .then ((res) =>{
+	      this.authService.isAuth().subscribe( user => {
+		if(user){
+		  user.updateProfile({
+		    displayName: '',
+		    photoURL: this.inputImageUser.nativeElement.value
+		  }).then (()=> {
+		    this.router.navigate(['admin/list-books']);
+		  }).catch((error)=> console.log('error', error));
+		}
+	      })
+	    }).catch(err => console.log('err', err.message));
+	  }
+Para ver si se ha guardado la imagen la recuperaremos en el perfil del usuario
 
-16:00
+
+
+
+
 
 
